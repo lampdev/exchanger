@@ -1,0 +1,60 @@
+version: "2.1"
+
+volumes:
+  dbdata:
+  exchanger_vendor:
+
+services:
+  db:
+    build: 
+      context: ../db
+      dockerfile: Dockerfile
+      args:
+        SYSTEM_TZ: "${SYSTEM_TZ:-America/New_York}"
+        MYSQL_ROOT_PASSWORD: rootsecret
+        MYSQL_DATABASE: homestead
+        MYSQL_USER: homestead
+        MYSQL_PASSWORD: secret
+    environment:
+      TZ: "${SYSTEM_TZ:-America/New_York}"
+    labels:
+      - "traefik.enable=false"
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - dbdata:/var/lib/mysql2
+
+  baseimage:
+    build:
+      context: .
+      dockerfile: images/php/Dockerfile
+      args:
+        SYSTEM_TZ: "${SYSTEM_TZ:-America/New_York}"
+    image: baseimage-php
+    environment:
+      SYSTEM_TZ_ENV: "${SYSTEM_TZ:-America/New_York}"
+    labels:
+      - "traefik.enable=false"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "${PHPMYADMIN_PORT:-8080}:80"
+    links:
+      - db
+
+  exchanger:
+    build:
+      context: ../exchanger
+      dockerfile: Dockerfile
+    env_file: ../exchanger/.env
+    depends_on:
+      - "db"
+      - "baseimage"
+    ports:
+      - "${EXCHANGER_PORT:-8084}:80"
+    volumes:
+      - "${ROOT_PATH:-..}/exchanger:/var/www/html"
+      - "exchanger_vendor:/var/www/html/vendor"
+    labels:
+      - "traefik.port=80"
