@@ -27,7 +27,7 @@ class RateType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'step' => '0.000000000000000001',
-                    'placeholder' => 'Enter rate (based on '. getenv('BASE_CURRENCY') . ')'
+                    'placeholder' => 'Enter rate'
                 ]
             ])
             ->add('submit', SubmitType::class, [
