@@ -43,6 +43,7 @@ class RatesControllerTest extends WebTestCase
         if (is_null($rate)) {
             $rate = new Rate();
             $rate->setCreated($date);
+            $rate->setUpdated($date);
             $rate->setRate(777);
             $rate->setCurrency('EUR');
         }
