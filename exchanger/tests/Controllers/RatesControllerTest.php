@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RatesControllerTest extends WebTestCase
 {
+    private const TEST_CURRENCY = 'EUR';
+
     /** @var KernelBrowser */
     private $client;
 
@@ -30,13 +32,16 @@ class RatesControllerTest extends WebTestCase
     /** @var DateTime */
     private $originUpdated;
 
+    /** @var bool */
+    private $isNewRate = false;
+
     public function setUp(): void
     {
         $this->client = static::createClient();
         self::bootKernel();
         $this->rateRepository = self::$container->get('doctrine')->getRepository(Rate::class);
         $rate = $this->rateRepository->findOneBy([
-            'currency' => 'EUR'
+            'currency' => self::TEST_CURRENCY
         ]);
         $date = new DateTime();
 
@@ -45,13 +50,14 @@ class RatesControllerTest extends WebTestCase
             $rate->setCreated($date);
             $rate->setUpdated($date);
             $rate->setRate(777);
-            $rate->setCurrency('EUR');
+            $rate->setCurrency(self::TEST_CURRENCY);
+            $this->isNewRate = true;
         }
+
 
         $this->originDeleted = $rate->getDeleted();
         $this->originRate = $rate->getRate();
         $this->originUpdated = $rate->getUpdated();
-        $rate->setUpdated($date);
         $rate->setDeleted(false);
         $this->rateRepository->plush($rate);
         $this->testRate = $rate;
@@ -144,7 +150,14 @@ class RatesControllerTest extends WebTestCase
 
     public function tearDown(): void
     {
-        $this->testRate->setCurrency('EUR');
+        if ($this->isNewRate) {
+            $manager = $this->rateRepository->getObjectManager();
+            $manager->remove($this->testRate);
+            $manager->flush();
+            return;
+        }
+
+        $this->testRate->setCurrency(self::TEST_CURRENCY);
         $this->testRate->setUpdated($this->originUpdated);
         $this->testRate->setRate($this->originRate);
         $this->testRate->setDeleted($this->originDeleted);
