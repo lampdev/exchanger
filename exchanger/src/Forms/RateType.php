@@ -12,6 +12,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class RateType extends AbstractType
 {
+    /** string */
+    private $baseCurrency;
+
+    public function __construct(string $baseCurrency)
+    {
+        $this->baseCurrency = $baseCurrency;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -26,8 +34,8 @@ class RateType extends AbstractType
             ->add('rate', NumberType::class, [
                 'attr' => [
                     'class' => 'form-control',
-                    'step' => '0.000000000000000001',
-                    'placeholder' => 'Enter rate'
+                    'placeholder' => 'Enter rate (based on ' . $this->baseCurrency . ')',
+                    'min' => 0
                 ]
             ])
             ->add('submit', SubmitType::class, [

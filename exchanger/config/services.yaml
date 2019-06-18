@@ -34,3 +34,8 @@ services:
         autowire: true
         bind:
             $baseCurrency: '%env(BASE_CURRENCY)%'
+
+    App\Forms\RateType:
+        autowire: true
+        bind:
+            $baseCurrency: '%env(BASE_CURRENCY)%'
